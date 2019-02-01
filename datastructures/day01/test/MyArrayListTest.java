@@ -58,12 +58,13 @@ public class MyArrayListTest {
 
     @Test
     public void testAddIndexThrows(){
-        cows.add(4,JAQUAN);
+        cows.add(4,JAQUAN); // Broken? MyArrayList size is 4, and adding to the 4th index will throw an IndexOutOfBoundsExecption
         assertEquals(5,cows.size());
         boolean error = false;
         try {
             cows.add(6,JAQUAN);
         } catch(IndexOutOfBoundsException e) {
+            System.out.println("Caught");
             error = true;
         }
         assertTrue(error);
