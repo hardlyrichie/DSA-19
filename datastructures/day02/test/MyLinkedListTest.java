@@ -26,8 +26,6 @@ public class MyLinkedListTest {
         chickens.add(GEORGY);
         chickens.add(LILY);
         chickens.add(JIMI);
-
-
     }
 
     @Test
