@@ -113,7 +113,13 @@ public class Problems {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             switch (c) {
-                case '+': case '-': case '*': case '/': case '(':
+                case '+': case '-': case '*': case '/':
+                    if (op.size() > 0 && op.peek() != '(') {
+                        postfix.append(op.pop() + " ");
+                    }
+                    op.push(c);
+                    break;
+                case '(':
                     op.push(c);
                     break;
                 case ' ':
@@ -134,6 +140,10 @@ public class Problems {
                         return "Unrecognized term";
                     }
             }
+        }
+
+        while (op.size() > 0) {
+            postfix.append(op.pop() + " ");
         }
 
        return postfix.toString().trim();
