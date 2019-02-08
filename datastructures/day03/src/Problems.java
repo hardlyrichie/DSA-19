@@ -14,107 +14,130 @@ public class Problems {
         }
     }
 
-    // Add them to Linked List or stack
-
-    // O((k+1)n) = O(n)
+    // Time: O(k + n) = O(n)
+    // Adds elements of A into result list and checks if new element is less than last elements in list, removing k elements
     public static List<Integer> removeKDigits(int[] A, int k) {
         List<Integer> l = new ArrayList<Integer>();
 
-        for (int i : A) {
-            l.add(i);
-        }
-
-        // Removes k elements from list
-        for (int i = 0; i < k; i++) {
-            int start = 0;
-
-            // Search through list in segments of length k for an element to remove
-            remove:
-            while(true) {
-                for (int j = start; j < start + (k - i); j++) {
-                    // Remove item if it is greater than next item, Edge Case: Get to end of list, remove last item
-                    if (j + 1 >= l.size() || l.get(j) > l.get(j+1)) {
-                        l.remove(j);
-                        break remove;
+        for (int i = 0; i < A.length; i++) {
+            if (l.size() > 0) {
+                boolean checkRemove = true;
+                while (k > 0 && checkRemove && l.size() - 1 >= 0) { // ask about runtime. O(k+n)? or O(n^2)
+                    if (A[i] < l.get(l.size() - 1)) { // Check last element in l, if greater than current element, remove
+                        l.remove(l.size() - 1);
+                        k--;
+                    } else {
+                        checkRemove = false;
                     }
                 }
-                // Redefine start position
-                start += k - i;
             }
+            l.add(A[i]);
+        }
+
+        // Remove from end if need be to clear k
+        for (int i = 0; i < k; i++) {
+            l.remove(l.size() - 1);
         }
 
         return l;
     }
 
-    // Reverse half the linked list
-
-    // O(n/2) = O(n)
+    // Time: O(n), Space: O(1)
+    // Finds midpoint of singly linked list. Breaks list into two, reversing the second half. Then compares the two lists starting
+    // from each list's head node and going inwards. -> -> -> <- <- <-
+    // Odd palindromes are turned even by skipping over the middle node.
     public static boolean isPalindrome(Node n) {
-        if (n == null) {
+        if (n == null || n.next == null) { // empty or single list
             return true;
         }
 
-        Node head = n;
-        Node current = head;
+        // slowPtr arrives at half way of linkedlist as fastPtr moves 2x speed
+        Node slowPtr = n, fastPtr = n, prevSlowPtr = n;
+
+        while (fastPtr != null && fastPtr.next != null) {
+            fastPtr = fastPtr.next.next; // 2x speed
+            prevSlowPtr = slowPtr;
+            slowPtr = slowPtr.next; // 1x speed
+        }
+
+        // Odd palindrome, move slowPtr over middle node
+        if (fastPtr != null) {
+            slowPtr = slowPtr.next;
+        }
+
+        // Split list in half and reverse the second half
+        Node secondHalf = slowPtr;
+        prevSlowPtr.next = null; // Splits list in half
+
+        // Reverse
         Node prev = null;
+        Node current = secondHalf;
+        Node next;
+        while (current != null)
+        {
+            next = current.next;
+            current.next = prev;
+            prev = current;
+            current = next;
+        }
+        secondHalf = prev; // secondHalf now starts at tail node or original list
 
-        while (true) {
-            if (current.next == null) {
-                if (head.val == current.val) {
-                    // last two nodes are equal -> even palindrome, no previous value and head is equal to current -> odd palindrome
-                    if (head.next == current || prev == null) {
-                        return  true;
-                    }
+        // Compare the two lists
+        Node forwards = n;
+        Node backwards = secondHalf;
 
-                    // Removes first and last node (palindrome pairs)
-                    prev.next = null;
-                    head = head.next;
-                    current = head; // start back from the top
-                    prev = null;
-                } else {
-                    return false;
-                }
+        while (forwards != null && backwards != null) {
+            if (forwards.val == backwards.val) {
+                forwards = forwards.next;
+                backwards = backwards.next;
             } else {
-                prev = current;
-                current = current.next;
+                return false;
             }
+        }
+
+        if (forwards == null && backwards == null) {
+            return true;
+        } else { // when one is null and the other isn't causing the exit of the while loop
+            return false;
         }
     }
 
-    // Two stacks
-
-    // O(2n) = O(n)
+    // Time: O(n), Space: O(n)
+    // 2 stacks or 1 stack and one stringbuilder. Stack holds the operators and numbers are appended to the string.
+    // If encounters a ')', signifying end of parenthesis block, pop off stack till reach '(' and append operators into string.
+    // Then remove the parentheses.
     public static String infixToPostfix(String s) {
-        Stack<Character> bank = new Stack<Character>();
-
-        for (int i = 0; i < s.length(); i++) {
-            bank.push(s.charAt(i));
-        }
-
+        Stack<Character> op = new Stack<Character>();
         StringBuilder postfix = new StringBuilder();
-        convert:
+
         for (int i = 0; i < s.length(); i++) {
-            char c = bank.pop();
+            char c = s.charAt(i);
             switch (c) {
-                case '+': case '-': case '*': case '/':
-                    int idx = postfix.indexOf(")");
-                    postfix.replace(idx, idx+1, Character.toString(c));
+                case '+': case '-': case '*': case '/': case '(':
+                    op.push(c);
                     break;
-                case '(': case ' ':
-                    continue convert;
+                case ' ':
+                    continue;
                 case ')':
-                    postfix.insert(0, Character.toString(c) + " ");
+                    while (!op.isEmpty() && op.peek() != '(') // Remove all operators until '('
+                        postfix.append(op.pop() + " ");
+                    if (!op.isEmpty() && op.peek() != '(') { // Next element in op should be a '(', if not error
+                        return "Invalid Expression";
+                    } else {
+                      op.pop(); // Remove the '('
+                    }
                     break;
                 default:
                     if (Character.isDigit(c)) {
-                        postfix.insert(0, Character.getNumericValue(c) + " ");
+                        postfix.append(c + " ");
                     } else {
                         return "Unrecognized term";
                     }
             }
         }
 
-        return postfix.toString().trim();
+       return postfix.toString().trim();
+
     }
 
 }
