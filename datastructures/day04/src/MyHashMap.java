@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class MyHashMap<K, V> implements Map<K, V> {
@@ -50,10 +51,9 @@ public class MyHashMap<K, V> implements Map<K, V> {
      * given a key, return the bucket where the `K, V` pair would be stored if it were in the map.
      */
     private LinkedList<Entry> chooseBucket(Object key) {
-        // TODO
-        // hint: use key.hashCode() to calculate the key's hashCode using its built in hash function
-        // then use % to choose which bucket to return.
-        return null;
+        int hashCode = key.hashCode();
+        return buckets[hashCode % buckets.length];
+
     }
 
     @Override
@@ -71,35 +71,78 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public boolean containsKey(Object key) {
-        // TODO
+        LinkedList<Entry> bucket = chooseBucket(key);
+        for (Entry entry : bucket) {
+            if (entry.getKey().equals(key)) {
+                return true;
+            }
+        }
         return false;
     }
 
     /**
      * return true if value is in map
+     * O(n)
      */
     @Override
     public boolean containsValue(Object value) {
-        // TODO
+        for (LinkedList<Entry> entries : buckets) {
+            for (Entry entry : entries) {
+                if (entry.getValue() == null) {
+                    if (value == null) {
+                        return true;
+                    }
+                    continue;
+                } else if (entry.getValue().equals(value)) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
     @Override
     public V get(Object key) {
-        // TODO
+        Entry entry = getEntry(key);
+        return entry == null ? null : entry.getValue();
+    }
+
+    private Entry getEntry(Object key) {
+        LinkedList<Entry> bucket = chooseBucket(key);
+        for (int i = 0; i < bucket.size(); i++) {
+            if (bucket.get(i).getKey().equals(key)) {
+                return bucket.get(i);
+            }
+        }
+
         return null;
     }
 
     /**
      * add a new key-value pair to the map. Grow if needed, according to `ALPHA`.
      * @return the value associated with the key if it was previously in the map, otherwise null.
+     * O(1)
      */
     @Override
     public V put(K key, V value) {
-        // TODO: Complete this method
-        // hint: use chooseBucket() to determine which bucket to place the pair in
-        // hint: use rehash() to appropriately grow the hashmap if needed
-        return null;
+        LinkedList<Entry> bucket = chooseBucket(key);
+        Entry entry = getEntry(key);
+        V oldValue = null;
+
+        if (entry == null) {
+            bucket.add(new Entry(key, value));
+            size++;
+        } else {
+            oldValue = entry.getValue();
+            entry.setValue(value);
+        }
+
+        if (size() > buckets.length * ALPHA) {
+            rehash(GROWTH_FACTOR);
+        }
+
+        return oldValue;
     }
 
     /**
@@ -109,10 +152,23 @@ public class MyHashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V remove(Object key) {
-        // TODO
-        // hint: use chooseBucket() to determine which bucket the key would be
-        // hint: use rehash() to appropriately grow the hashmap if needed
-        return null;
+        LinkedList<Entry> bucket = chooseBucket(key);
+        Entry entry = getEntry(key);
+        V oldValue = null;
+
+        if (entry == null) {
+            return null;
+        } else {
+            oldValue = entry.getValue();
+            bucket.remove(entry);
+            size--;
+        }
+
+        if (size() < buckets.length * BETA && buckets.length > MIN_BUCKETS) {
+            rehash(SHRINK_FACTOR);
+        }
+
+        return oldValue;
     }
 
     @Override
@@ -126,17 +182,29 @@ public class MyHashMap<K, V> implements Map<K, V> {
      * Changes the number of buckets and rehashes the existing entries.
      * If growthFactor is 2, the number of buckets doubles. If it is 0.25,
      * the number of buckets is divided by 4.
+     * O(n)
      */
     private void rehash(double growthFactor) {
-        // TODO
-        // hint: once you have removed all values from the buckets, use put(k, v) to add them back in the correct place
+        LinkedList<Entry>[] oldBuckets = buckets;
+        initBuckets((int)(buckets.length * growthFactor));
+        size = 0;
+        for (LinkedList<Entry> entries : oldBuckets) {
+            for (Entry entry : entries) {
+                put(entry.getKey(), entry.getValue());
+            }
+        }
+    }
+
+    private LinkedList<Entry>[] initList(int size) {
+        LinkedList<Entry>[] newList = new LinkedList[size];
+        for (int i = 0; i < size; i++) {
+            newList[i] = new LinkedList<>();
+        }
+        return newList;
     }
 
     private void initBuckets(int size) {
-        buckets = new LinkedList[size];
-        for (int i = 0; i < size; i++) {
-            buckets[i] = new LinkedList<>();
-        }
+        buckets = initList(size);
     }
 
     public void clear() {
