@@ -39,10 +39,46 @@ public class Problems {
      *
      * @param inputStream an input stream of integers
      * @return the median of the stream, after each element has been added
+     *
+     * Keeps track of the number before (or at) median and number after median. Calculates median using those values.
      */
     public static double[] runningMedian(int[] inputStream) {
         double[] runningMedian = new double[inputStream.length];
-        // TODO
+        // Keeps track of numbers before median and the median (when array is odd)
+        PriorityQueue<Integer> before = maxPQ();
+        // Keeps track of numbers after the median
+        PriorityQueue<Integer> after = minPQ();
+
+        for (int i = 0; i < inputStream.length; i++) {
+            int n = inputStream[i];
+            // First element
+            if (before.size() == 0 && after.size() == 0) {
+                before.offer(n);
+                runningMedian[i] = n;
+                continue;
+            }
+            if (n <= before.peek()) {
+                if (i % 2 != 0) { // even median
+                    // Move over largest element in before to balance out queues
+                    after.offer(before.poll());
+                    before.offer(n);
+                    runningMedian[i] = (before.peek() + after.peek()) / 2.0;
+                } else {
+                    before.offer(n);
+                    runningMedian[i] = before.peek();
+                }
+            } else {
+                after.offer(n);
+                if (i % 2 != 0) { // even median
+                    runningMedian[i] = (before.peek() + after.peek()) / 2.0;
+                } else {
+                    // Move median to before queue to balance out.
+                    before.offer(after.poll());
+                    runningMedian[i] = before.peek();
+                }
+            }
+        }
+
         return runningMedian;
     }
 
