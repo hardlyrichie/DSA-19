@@ -35,11 +35,6 @@ public class QuickSort extends SortAlgorithm {
      * @param hi The ending index of the subarray being considered (inclusive)
      */
     public void quickSort(int[] a, int lo, int hi) {
-        // TODO: Ask how to import class from other project for insertion sort
-//        if (a.length <= INSERTION_THRESHOLD) {
-//
-//        }
-
         if (lo < hi) {
             int p = partition(a, lo, hi);
             quickSort(a, lo, p - 1);
