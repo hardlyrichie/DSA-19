@@ -7,9 +7,11 @@ public class AVLTree<T extends Comparable<T>> extends BinarySearchTree<T> {
     TreeNode<T> delete(TreeNode<T> n, T key) {
         n = super.delete(n, key);
         if (n != null) {
-            // TODO
-            // update the height of the tree using the height of the left and right child
-            // return balance(n)
+            // update the height of the tree using the height of the left and right child and then check balance for n and all children
+            int rightHeight = n.rightChild != null ? n.rightChild.height : -1;
+            int leftHeight = n.leftChild != null ? n.leftChild.height : -1;
+            n.height =  Math.max(leftHeight, rightHeight) + 1;
+            return balance(n);
         }
         return null;
     }
@@ -21,9 +23,11 @@ public class AVLTree<T extends Comparable<T>> extends BinarySearchTree<T> {
     TreeNode<T> insert(TreeNode<T> n, T key) {
         n = super.insert(n, key);
         if (n != null) {
-            // TODO
-            // update the height of the tree using the height of the left and right child
-            // return balance(n)
+            // update the height of the tree using the height of the left and right child and then check balance for n and all children
+            int rightHeight = n.rightChild != null ? n.rightChild.height : -1;
+            int leftHeight = n.leftChild != null ? n.leftChild.height : -1;
+            n.height =  Math.max(leftHeight, rightHeight) + 1;
+            return balance(n);
         }
         return null;
     }
@@ -43,8 +47,9 @@ public class AVLTree<T extends Comparable<T>> extends BinarySearchTree<T> {
 
     // Return the height of the given node. Return -1 if null.
     private int height(TreeNode<T> n) {
-        // TODO
-        return 0;
+        if (n == null) return -1;
+        n.height =  Math.max(height(n.leftChild), height(n.rightChild)) + 1;
+        return n.height;
     }
 
     public int height() {
@@ -53,8 +58,20 @@ public class AVLTree<T extends Comparable<T>> extends BinarySearchTree<T> {
 
     // Restores the AVL tree property of the subtree. Return the head of the new subtree
     TreeNode<T> balance(TreeNode<T> n) {
-        // TODO: (if you're having trouble, use pseudocode provided in slides)
-        return null;
+        int bf = balanceFactor(n);
+        if (bf > 1) { // very right heavy
+            if (balanceFactor(n.rightChild) <= -1) { // right child is left heavy
+                n.rightChild = rotateRight(n.rightChild);
+            }
+            n = rotateLeft(n);
+        } else if (bf < -1) { // very left heavy
+            if (balanceFactor(n.leftChild) >= 1) { // left child is right heavy
+                n.leftChild = rotateLeft(n.leftChild);
+            }
+            n = rotateRight(n);
+        }
+
+        return n;
     }
 
     /**
@@ -65,23 +82,38 @@ public class AVLTree<T extends Comparable<T>> extends BinarySearchTree<T> {
      * most one.
      */
     private int balanceFactor(TreeNode<T> n) {
-        // TODO
-        return 0;
+        int rightHeight = n.rightChild != null ? n.rightChild.height : -1;
+        int leftHeight = n.leftChild != null ? n.leftChild.height : -1;
+        return rightHeight - leftHeight;
     }
 
     /**
      * Perform a right rotation on node `n`. Return the head of the rotated tree.
      */
     private TreeNode<T> rotateRight(TreeNode<T> n) {
-        // TODO
-        return null;
+        TreeNode<T> rotateHead = n.leftChild;
+        TreeNode<T> beta = rotateHead.rightChild;
+        rotateHead.rightChild = n;
+        n.leftChild = beta;
+
+        // Calculate new heights after rotation
+        rotateHead.height = height(rotateHead);
+
+        return rotateHead;
     }
 
     /**
      * Perform a left rotation on node `n`. Return the head of the rotated tree.
      */
     private TreeNode<T> rotateLeft(TreeNode<T> n) {
-        // TODO
-        return null;
+        TreeNode<T> rotateHead = n.rightChild;
+        TreeNode<T> beta = rotateHead.leftChild;
+        rotateHead.leftChild = n;
+        n.rightChild = beta;
+
+        // Calculate new heights after rotation
+        rotateHead.height = height(rotateHead);
+
+        return rotateHead;
     }
 }

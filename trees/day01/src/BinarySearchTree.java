@@ -49,6 +49,14 @@ public class BinarySearchTree<T extends Comparable<T>> {
         return true;
     }
 
+    /**
+     * For no child, delete pointer to node from parent
+     * For single child, connect pointer from child to delete node's existing child
+     * For two children, find successor to delete node. Successor will replace the delete node. So first have to put
+     * successor's right child (will have no left child b/c is successor) to the successor parent's left child (replacing
+     * successor's position). Connect successor's right and left child pointers to the delete node's left and right children.
+     * Connect delete node's parent pointer to successor node.
+     */
     TreeNode<T> delete(TreeNode<T> n, T key) {
         int cmp = key.compareTo(n.key);
         if (cmp < 0) {
