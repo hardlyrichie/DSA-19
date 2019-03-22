@@ -35,19 +35,29 @@ public class RedBlackTree<T extends Comparable<T>> extends BinarySearchTree<T> {
 
     // make a left-leaning link lean to the right
     TreeNode<T> rotateRight(TreeNode<T> h) {
-        // TODO
-        return h;
+        TreeNode<T> x = h.leftChild;
+        h.leftChild = x.rightChild;
+        x.rightChild = h;
+        x.color = x.rightChild.color;
+        x.rightChild.color = RED;
+        return x;
     }
 
     // make a right-leaning link lean to the left
     TreeNode<T> rotateLeft(TreeNode<T> h) {
-        // TODO
-        return h;
+        TreeNode<T> x = h.rightChild;
+        h.rightChild = x.leftChild;
+        x.leftChild = h;
+        x.color = x.leftChild.color;
+        x.leftChild.color = RED;
+        return x;
     }
 
     // flip the colors of a TreeNode and its two children
     TreeNode<T> flipColors(TreeNode<T> h) {
-        // TODO
+        h.color = !h.color;
+        h.leftChild.color = !h.leftChild.color;
+        h.rightChild.color = !h.rightChild.color;
         return h;
     }
 
@@ -60,7 +70,9 @@ public class RedBlackTree<T extends Comparable<T>> extends BinarySearchTree<T> {
      * return balanced node
      */
     private TreeNode<T> balance(TreeNode<T> h) {
-        // TODO
+        if (isRed(h.rightChild)) h = rotateLeft(h);
+        if (isRed(h.leftChild) && isRed(h.leftChild.leftChild)) h = rotateRight(h);
+        if (isRed(h.leftChild) && isRed(h.rightChild)) h = flipColors(h);
         return h;
     }
 
@@ -73,6 +85,7 @@ public class RedBlackTree<T extends Comparable<T>> extends BinarySearchTree<T> {
     TreeNode<T> insert(TreeNode<T> h, T key) {
         h = super.insert(h, key);
         // TODO: use balance to correct for the three rotation cases
+        h = balance(h);
         return h;
     }
 
@@ -133,6 +146,7 @@ public class RedBlackTree<T extends Comparable<T>> extends BinarySearchTree<T> {
     }
 
     // return true if this LLRB is a valid 2-3 tree
+    // Does so by checking all three invalid cases that indicate a need to rotate
     private boolean is23(TreeNode<T> n) {
         if (n == null) return true;
         if (isRed(n.rightChild)) return false;
