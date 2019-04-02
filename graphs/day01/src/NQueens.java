@@ -48,11 +48,63 @@ public class NQueens {
         return B;
     }
 
-
+    // Time: O(n*n*something else like validation?) b/c there are n rows and n columns to try for each row
     public static List<char[][]> nQueensSolutions(int n) {
-        // TODO
         List<char[][]> answers = new ArrayList<>();
+
+        int queenCols[] = new int[n];
+        for (int i = 0; i < n; i++) {
+            queenCols[i] = 0;
+        }
+
+        nQueensHelper(new char[n][n], 0, queenCols, answers);
         return answers;
+    }
+
+    /**
+     * Helper for nQueensSolutions. Given a graph, perform DFS and find all solutions for the board
+     * @param current Current game board
+     * @param row The row to initialize on this recursive stack call
+     * @param queenCols Columns that currently have a queen
+     * @param solutions Holds all the solutions to the problem
+     * time: O(n! * n^2)
+     * space: O(n^2)
+     */
+    private static void nQueensHelper(char[][] current, int row, int[] queenCols, List<char[][]> solutions) {
+        // Base case: All rows are filled
+        if (row >= current.length) {
+            solutions.add(copyOf(current));
+            return;
+        }
+
+        // Iterate every choice of the position of the queen in a row of the game board
+        for (int i = 0; i < current.length; i++) {
+            // Fill in row
+            current[row] = new char[current.length];
+            for (int j = 0; j < current[i].length; j++) {
+                if (i == j) {
+                    current[row][j] = 'Q';
+                } else {
+                    current[row][j] = '.';
+                }
+            }
+
+            // Prune branch from search space if board is no longer valid
+            // O(n^2)
+            if (queenCols[i] != 0 || checkDiagonal(current, row, i)) {
+                current[row] = new char[current.length];
+                continue;
+            }
+
+            // Column i is now used
+            queenCols[i] = 1;
+
+            nQueensHelper(current, row + 1, queenCols, solutions);
+
+            // Reset board
+            current[row] = new char[current.length];
+            queenCols[i] = 0;
+        }
     }
 
 }

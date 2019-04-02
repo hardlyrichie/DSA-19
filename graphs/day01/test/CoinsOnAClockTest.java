@@ -11,6 +11,14 @@ public class CoinsOnAClockTest {
     @Test
     public void testSmallClock() {
         List<char[]> solutions = CoinsOnAClock.coinsOnAClock(2, 2, 2, 6);
+
+//        for (char[] s : solutions) {
+//            for (int i = 0; i < s.length; i++) {
+//                System.out.print(s[i] + " ");
+//            }
+//            System.out.println();
+//        }
+
         Character[][] expected = new Character[][]{
                 {'d', 'p', 'n', 'n', 'p', 'd'},
                 {'p', 'd', 'p', 'n', 'd', 'n'},
