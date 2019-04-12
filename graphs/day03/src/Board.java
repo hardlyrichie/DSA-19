@@ -17,32 +17,25 @@ public class Board {
                             {7, 8, 0}};
 
     private int emptyRow, emptyCol;
-    private HashMap<Integer, int[]> goal_map;
 
     /*
      * Set the global board size and tile state
      */
     public Board(int[][] b) {
         tiles = new int[b.length][b[0].length];
-        goal_map = new HashMap<>();
-        int tile = 0;
 
-        for (int i = 0; i < b.length; i++) {
-            for (int j = 0; j < b[i].length; j++) {
+        for(int i = 0; i < b.length; i++){
+            for(int j = 0; j < b.length; j++){
                 tiles[i][j] = b[i][j];
 
                 if (tiles[i][j] == 0) {
                     emptyRow = i;
                     emptyCol = j;
                 }
-
-                // Initialize hashmaps
-                tile += 1;
-                goal_map.put(tile, new int[] {i, j});
             }
         }
 
-        n = tiles.length;
+        n = size();
     }
 
     /*
@@ -58,16 +51,21 @@ public class Board {
      */
     public int manhattan() {
         int sum = 0;
-        for (int i = 0; i < tiles.length; i++) {
-            for (int j = 0; j < tiles[i].length; j++) {
-                // Skip empty position
-                if (!goal_map.containsKey(tiles[i][j])) continue;
-
-                int coord[] = goal_map.get(tiles[i][j]);
-                sum += Math.abs(i - coord[0]) + Math.abs(j - coord[1]);
+        for(int i = 0; i < n; i++){
+            for(int j = 0; j < n; j++){
+                sum += dist(i, j);
             }
         }
         return sum;
+    }
+
+    private int dist(int r, int c){
+        int val = tiles[r][c];
+
+        if(val == 0) return 0;
+
+        val--;
+        return Math.abs(val / n - r) + Math.abs(val % n - c);
     }
 
     /*
@@ -131,18 +129,18 @@ public class Board {
             slideHorizontally(emptyRow, emptyCol, 1, neighbors);
         }
         return neighbors;
-     }
+    }
 
-     private void slideVertically(int i, int j, int tile, List<Board> neighbors) {
-         int temp = tiles[i+tile][j];
-         tiles[i+tile][j] = 0;
-         tiles[i][j] = temp;
-         neighbors.add(new Board(tiles));
+    private void slideVertically(int i, int j, int tile, List<Board> neighbors) {
+        int temp = tiles[i+tile][j];
+        tiles[i+tile][j] = 0;
+        tiles[i][j] = temp;
+        neighbors.add(new Board(tiles));
 
-         // Undo slide
-         tiles[i][j] = 0;
-         tiles[i+tile][j] = temp;
-     }
+        // Undo slide
+        tiles[i][j] = 0;
+        tiles[i+tile][j] = temp;
+    }
 
     private void slideHorizontally(int i, int j, int tile, List<Board> neighbors) {
         int temp = tiles[i][j+tile];

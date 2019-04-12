@@ -63,7 +63,7 @@ public class Solver {
         this.initial = initial;
         if (!isSolvable()) return;
 
-        PriorityQueue<State> frontier = new PriorityQueue<State>();
+        PriorityQueue<State> frontier = new PriorityQueue<>();
         HashMap<Board, Integer> movesAtEachNode = new HashMap<>();
 
         State init = new State(initial,0 ,null);
@@ -90,7 +90,6 @@ public class Solver {
                 }
             }
         }
-
     }
 
     /*
