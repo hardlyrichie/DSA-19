@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,15 +11,38 @@ public class Board {
     private int n;
     public int[][] tiles;
 
-    //TODO
     // Create a 2D array representing the solved board state
-    private int[][] goal = {{}};
+    private int[][] goal = {{1, 2, 3},
+                            {4, 5, 6},
+                            {7, 8, 0}};
+
+    private int emptyRow, emptyCol;
+    private HashMap<Integer, int[]> goal_map;
 
     /*
      * Set the global board size and tile state
      */
     public Board(int[][] b) {
-        // TODO: Your code here
+        tiles = new int[b.length][b[0].length];
+        goal_map = new HashMap<>();
+        int tile = 0;
+
+        for (int i = 0; i < b.length; i++) {
+            for (int j = 0; j < b[i].length; j++) {
+                tiles[i][j] = b[i][j];
+
+                if (tiles[i][j] == 0) {
+                    emptyRow = i;
+                    emptyCol = j;
+                }
+
+                // Initialize hashmaps
+                tile += 1;
+                goal_map.put(tile, new int[] {i, j});
+            }
+        }
+
+        n = tiles.length;
     }
 
     /*
@@ -25,41 +50,109 @@ public class Board {
      (equal to 3 for 8 puzzle, 4 for 15 puzzle, 5 for 24 puzzle, etc)
      */
     private int size() {
-        // TODO: Your code here
-        return 0;
+        return tiles.length;
     }
 
     /*
-     * Sum of the manhattan distances between the tiles and the goal
+     * Sum of the manhattan distances between the tiles and the goal, not including the empty position
      */
     public int manhattan() {
-        // TODO: Your code here
-        return 0;
+        int sum = 0;
+        for (int i = 0; i < tiles.length; i++) {
+            for (int j = 0; j < tiles[i].length; j++) {
+                // Skip empty position
+                if (!goal_map.containsKey(tiles[i][j])) continue;
+
+                int coord[] = goal_map.get(tiles[i][j]);
+                sum += Math.abs(i - coord[0]) + Math.abs(j - coord[1]);
+            }
+        }
+        return sum;
     }
 
     /*
      * Compare the current state to the goal state
      */
     public boolean isGoal() {
-        // TODO: Your code here
-        return false;
+        return manhattan() == 0;
     }
 
     /*
      * Returns true if the board is solvable
-     * Research how to check this without exploring all states
+     * Board is solvable if it has even number of inversions: any pair of blocks i and j where i < j but i appears after j
      */
     public boolean solvable() {
-        // TODO: Your code here
-        return false;
+        int inv = 0;
+        for (int i = 0; i < n*n; i++) {
+            int iIndex[] = countToIndex(i);
+            int iRow = iIndex[0], iCol = iIndex[1];
+
+            if (tiles[iRow][iCol] == 0) continue;
+
+            for (int j = i + 1; j < n*n; j++) {
+                int jIndex[] = countToIndex(j);
+                int jRow = jIndex[0], jCol = jIndex[1];
+
+                if (tiles[jRow][jCol] != 0 && tiles[iRow][iCol] > tiles[jRow][jCol]) {
+                    inv++;
+                }
+            }
+        }
+
+        return inv % 2 == 0;
+    }
+
+    private int[] countToIndex(int count) {
+        // Convert count to 2D index
+        int col = count % 3;
+        int row = (count - col) / 3;
+        return new int[] {row, col};
     }
 
     /*
      * Return all neighboring boards in the state tree
      */
     public Iterable<Board> neighbors() {
-        // TODO: Your code here
-        return null;
+        List<Board> neighbors = new ArrayList<Board>();
+        // Slide top tile into empty space
+        if (emptyRow > 0) {
+            slideVertically(emptyRow, emptyCol, -1, neighbors);
+        }
+        // Slide bottom tile into empty space
+        if (emptyRow < n - 1) {
+            slideVertically(emptyRow, emptyCol, 1, neighbors);
+        }
+        // Slide left tile into empty space
+        if (emptyCol > 0) {
+            slideHorizontally(emptyRow, emptyCol, -1, neighbors);
+        }
+        // Slide right tile into empty space
+        if (emptyCol < n - 1) {
+            slideHorizontally(emptyRow, emptyCol, 1, neighbors);
+        }
+        return neighbors;
+     }
+
+     private void slideVertically(int i, int j, int tile, List<Board> neighbors) {
+         int temp = tiles[i+tile][j];
+         tiles[i+tile][j] = 0;
+         tiles[i][j] = temp;
+         neighbors.add(new Board(tiles));
+
+         // Undo slide
+         tiles[i][j] = 0;
+         tiles[i+tile][j] = temp;
+     }
+
+    private void slideHorizontally(int i, int j, int tile, List<Board> neighbors) {
+        int temp = tiles[i][j+tile];
+        tiles[i][j+tile] = 0;
+        tiles[i][j] = temp;
+        neighbors.add(new Board(tiles));
+
+        // Undo slide
+        tiles[i][j] = 0;
+        tiles[i][j+tile] = temp;
     }
 
     /*
@@ -87,10 +180,27 @@ public class Board {
         return true;
     }
 
+    public String toString() {
+        String result = "--------\n";
+        for (int i = 0; i < tiles.length; i++) {
+            result += "|";
+            for (int j = 0; j < tiles[i].length; j++) {
+                result += tiles[i][j] + " ";
+            }
+            result += "|\n";
+        }
+        result += "--------\n";
+        return result;
+    }
+
+
     public static void main(String[] args) {
         // DEBUG - Your solution can include whatever output you find useful
-        int[][] initState = {{1, 2, 3}, {4, 0, 6}, {7, 8, 5}};
+        int[][] initState = {{8, 1, 2},{0,4,3},{7,6,5}};
         Board board = new Board(initState);
+
+        System.out.println("Board:");
+        System.out.println(board);
 
         System.out.println("Size: " + board.size());
         System.out.println("Solvable: " + board.solvable());
@@ -98,5 +208,8 @@ public class Board {
         System.out.println("Is goal: " + board.isGoal());
         System.out.println("Neighbors:");
         Iterable<Board> it = board.neighbors();
+        for (Board b : it) {
+            System.out.println(b);
+        }
     }
 }
