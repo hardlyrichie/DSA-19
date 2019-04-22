@@ -10,6 +10,7 @@ public class RubiksCube {
     private BitSet cube;
     private static HashMap<BitSet, Integer> h;
     private char rotations[] = {'u', 'U', 'r', 'R', 'f', 'F'};
+    private HashMap<Integer, HashMap<Integer, Integer>> distances;
 
     // initialize a solved rubiks cube
     public RubiksCube() {
@@ -19,6 +20,20 @@ public class RubiksCube {
             for (int i = 0; i < 4; i++) {
                 setColor(side * 4 + i, side * 4 + i);
             }
+        }
+    }
+
+    public void populate_hm(){
+        {0,19,22,}
+
+        distances = new HashMap<>();
+        for(int i = 0; i < 24; i++){
+            HashMap<Integer, Integer> curr_distances = new HashMap<>()
+            for(int j = 0; j < 24;j++){
+
+            }
+        distances.put(i, curr_distances);
+
         }
     }
 
@@ -230,6 +245,8 @@ public class RubiksCube {
             return ((State) s).cube.equals(this.cube);
         }
     }
+
+
 
 
 
